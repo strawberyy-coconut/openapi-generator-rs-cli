@@ -1,5 +1,7 @@
 # openapi-generator-cli
 
+[![crates.io](https://img.shields.io/crates/v/openapi-generator-cli.svg)](https://crates.io/crates/openapi-generator-cli)
+
 **Rust CLI wrapper for [OpenAPI Generator](https://openapi-generator.tech/).**
 
 This crate downloads the latest [OpenAPI Generator](https://openapi-generator.tech/) CLI JAR at build time
@@ -10,49 +12,46 @@ and wraps it in a convenient `cargo` command — no manual Java installation req
 ## Quick start
 
 ```bash
-# Run against any OpenAPI/Swagger spec
-cargo run -- generate \
+# Install from crates.io
+cargo install openapi-generator-cli
+
+# Generate a Rust client from an OpenAPI spec
+openapi-generator-cli generate \
   -i specs/petstore.yaml \
   -g rust \
   -o petstore-client \
   -p packageName=my_crate
 ```
 
-This downloads the OpenAPI Generator JAR (and a JRE) at build time, then
-forwards all arguments to the generator CLI.
+The first run downloads the OpenAPI Generator JAR (and a JRE) at build time,
+then forwards all arguments to the generator CLI.
 
 ## Installation
+
+### From crates.io (recommended)
+
+```bash
+cargo install openapi-generator-cli
+```
+
+Then run it anywhere:
+
+```bash
+openapi-generator-cli generate -i spec.yaml -g rust -o ./client
+```
+
+### Without the bundled JRE
+
+```bash
+cargo install openapi-generator-cli --no-default-features
+```
+
+This skips downloading a JRE — Java must be on your `PATH`.
 
 ### Run directly from the repo
 
 ```bash
 cargo run -- generate -i <spec> -g <generator> -o <output_dir> [options…]
-```
-
-### Install as a CLI tool
-
-```bash
-# From the workspace root
-cargo install --path .
-
-# Or using the dedicated CLI crate
-cargo install --path cli
-```
-
-Then invoke it anywhere:
-
-```bash
-openapi-generator-rs generate -i spec.yaml -g rust -o ./client
-```
-
-### Install with custom features
-
-```bash
-# Without the bundled JRE (uses java from PATH instead)
-cargo install --path . --no-default-features
-
-# Or using the dedicated CLI crate
-cargo install --path cli --no-default-features
 ```
 
 ---
@@ -75,29 +74,29 @@ applies.
 
 ```bash
 # List available generators
-cargo run -- list
+openapi-generator-cli list
 
 # Generate a Rust client
-cargo run -- generate \
+openapi-generator-cli generate \
   -i specs/petstore.yaml \
   -g rust \
   -o petstore-client \
   -p packageName=petstore
 
 # Generate a TypeScript client
-cargo run -- generate \
+openapi-generator-cli generate \
   -i specs/petstore.yaml \
   -g typescript \
   -o ts-client
 
 # Generate a Python client
-cargo run -- generate \
+openapi-generator-cli generate \
   -i specs/petstore.yaml \
   -g python \
   -o python-client
 
 # Generate a Rust client with additional options
-cargo run -- generate \
+openapi-generator-cli generate \
   -i specs/petstore.yaml \
   -g rust \
   -o rust-client \
@@ -109,7 +108,7 @@ cargo run -- generate \
 
 1. **Generate** the client code:
    ```bash
-   cargo run -- generate \
+   openapi-generator-cli generate \
      -i specs/petstore.yaml \
      -g rust \
      -o my-api/client \
