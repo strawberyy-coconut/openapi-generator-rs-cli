@@ -1,0 +1,18 @@
+[workspace]
+members = ["examples/simple"]
+
+[package]
+name = "openapi-generator-cli"
+version = "0.1.0"
+edition = "2024"
+description = "A cargo CLI wrapper around OpenAPI Generator — generates client SDKs from OpenAPI specs with a bundled JRE."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/strawberyy-coconut/openapi-generator-cli"
+homepage = "https://github.com/strawberyy-coconut/openapi-generator-cli"
+documentation = "https://openapi-generator.tech/docs/usage"
+keywords = ["openapi", "swagger", "codegen", "api-client"]
+categories = ["command-line-utilities", "development-tools"]
+
+[features]
+default = ["bundled-jre"]
+bundled-jre = []

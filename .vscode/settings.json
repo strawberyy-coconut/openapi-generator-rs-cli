@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.cargo.features": [
+        "bundled-jre"
+    ],
+    "rust-analyzer.check.features": [
+        "bundled-jre"
+    ]
+}
