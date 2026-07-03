@@ -3,7 +3,7 @@ members = ["examples/simple"]
 
 [package]
 name = "openapi-generator-cli"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "A cargo CLI wrapper around OpenAPI Generator — generates client SDKs from OpenAPI specs with a bundled JRE."
 license = "MIT OR Apache-2.0"
