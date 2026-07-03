@@ -94,6 +94,8 @@ fn download_jre(out_dir: &Path) {
     let archive_path = out_dir.join(format!("jre.{ext}"));
 
     download_file(&url, &archive_path);
+
+    println!("cargo:rustc-env=JRE_PATH={}", archive_path.display());
 }
 
 /// Detect the OS and architecture strings used by Adoptium's API.

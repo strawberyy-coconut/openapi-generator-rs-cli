@@ -2,9 +2,7 @@
 use std::process::Command;
 
 #[cfg(feature = "bundled-jre")]
-const JRE_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/jre.tar.gz"));
-#[cfg(all(feature = "bundled-jre", target_os = "windows"))]
-const JRE_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/jre.zip"));
+const JRE_BYTES: &[u8] = include_bytes!(env!("JRE_PATH"));
 
 const GENERATOR_JAR_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/openapi-generator-cli.jar"));
 
