@@ -81,8 +81,6 @@ fn get_latest_openapi_generator_version() -> String {
 fn download_jre(out_dir: &Path) {
     println!("cargo:warning=Downloading latest JRE (bundled-jre feature enabled)...");
 
-    let jre_install_dir = out_dir.join("jre-download");
-
     let (adopt_os, adopt_arch) = detect_platform();
 
     let version = get_latest_jre_version();
@@ -96,17 +94,6 @@ fn download_jre(out_dir: &Path) {
     let archive_path = out_dir.join(format!("jre.{ext}"));
 
     download_file(&url, &archive_path);
-
-    if jre_install_dir.exists() {
-        fs::remove_dir_all(&jre_install_dir).unwrap();
-    }
-    fs::create_dir_all(&jre_install_dir).unwrap();
-    extract_archive(&archive_path, &jre_install_dir, ext);
-
-    let jre_home = find_jre_dir(&jre_install_dir);
-
-    println!("cargo:warning=JRE installed at: {}", jre_home.display());
-    println!("cargo:rustc-env=JRE_HOME={}", jre_home.display());
 }
 
 /// Detect the OS and architecture strings used by Adoptium's API.
@@ -177,63 +164,6 @@ fn download_file(url: &str, dest: &Path) {
     }
 }
 
-/// Extract a `.tar.gz` or `.zip` archive into `dest_dir`.
-fn extract_archive(archive: &Path, dest_dir: &Path, ext: &str) {
-    match ext {
-        "tar.gz" => {
-            let status = Command::new("tar")
-                .args([
-                    "-xzf",
-                    &archive.to_string_lossy(),
-                    "-C",
-                    &dest_dir.to_string_lossy(),
-                    "--strip-components=1",
-                ])
-                .status()
-                .expect("Failed to execute tar — is it installed?");
 
-            if !status.success() {
-                panic!("Failed to extract JRE archive: {}", archive.display());
-            }
-        }
-        "zip" => {
-            let status = Command::new("unzip")
-                .args([
-                    "-q",
-                    &archive.to_string_lossy(),
-                    "-d",
-                    &dest_dir.to_string_lossy(),
-                ])
-                .status()
-                .expect("Failed to execute unzip — is it installed?");
 
-            if !status.success() {
-                panic!("Failed to extract JRE archive: {}", archive.display());
-            }
-        }
-        _ => panic!("Unsupported archive format: {ext}"),
-    }
-}
 
-/// Find the JRE home directory inside the install dir.
-/// After extraction with `--strip-components=1`, the contents go directly
-/// into `install_dir` (bin/, lib/, conf/, …), so `install_dir` itself is the
-/// JRE home.  Without `--strip-components` (e.g. zip) there will be a single
-/// versioned sub-directory — use that instead.
-fn find_jre_dir(install_dir: &Path) -> PathBuf {
-    let subdirs: Vec<_> = fs::read_dir(install_dir)
-        .unwrap_or_else(|e| panic!("Cannot read {install_dir:?}: {e}"))
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false))
-        .collect();
-
-    // If there are several sub-directories (bin/, lib/, conf/, …) then
-    // --strip-components already flattened things — install_dir is JRE_HOME.
-    // If there is exactly one sub-directory (the versioned top-level dir)
-    // use that as JRE_HOME.
-    if subdirs.len() == 1 {
-        subdirs.into_iter().next().unwrap().path()
-    } else {
-        install_dir.to_path_buf()
-    }
-}

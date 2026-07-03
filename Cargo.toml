@@ -16,3 +16,8 @@ categories = ["command-line-utilities", "development-tools"]
 [features]
 default = ["bundled-jre"]
 bundled-jre = []
+
+[dependencies]
+flate2 = "1.1.9"
+tar = "0.4.46"
+zip = "8.6.0"
