@@ -1,4 +1,5 @@
 
+use std::path::PathBuf;
 use std::process::Command;
 
 #[cfg(feature = "bundled-jre")]
@@ -6,20 +7,25 @@ const JRE_BYTES: &[u8] = include_bytes!(env!("JRE_PATH"));
 
 const GENERATOR_JAR_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/openapi-generator-cli.jar"));
 
-#[cfg(feature = "bundled-jre")]
-fn extract_archive() -> &'static str {
-    use std::io::Cursor;
-    use std::path::{Path, PathBuf};
+/// Directory next to the executable where extracted assets live.
+fn oas_gen_dir() -> PathBuf {
+    let exe = std::env::current_exe().expect("failed to get executable path");
+    exe.parent().expect("executable has no parent").join("oas-gen")
+}
 
-    let java_path = "./oas-gen/jre/bin/java";
+#[cfg(feature = "bundled-jre")]
+fn extract_archive() -> String {
+    use std::io::Cursor;
+
+    let base = oas_gen_dir();
+    let java_path = base.join("jre/bin/java");
 
     // Already extracted on a previous run — skip rebuilding
-    if Path::new(java_path).exists() {
-        return java_path;
+    if java_path.exists() {
+        return java_path.to_string_lossy().into_owned();
     }
 
-    let out_dir = Path::new("./oas-gen/");
-    let jre_path = out_dir.join("jre");
+    let jre_path = base.join("jre");
 
     if cfg!(target_os = "windows") {
         // ZIP archive — iterate entries and strip the top-level wrapper directory
@@ -91,37 +97,37 @@ fn extract_archive() -> &'static str {
         }
     }
 
-    java_path
+    java_path.to_string_lossy().into_owned()
 }
 
 
-fn write_generator_jar() -> &'static str {
+fn write_generator_jar() -> String {
     use std::fs;
-    use std::path::Path;
 
-    let jar_path = "./oas-gen/openapi-generator-cli.jar";
+    let jar_path = oas_gen_dir().join("openapi-generator-cli.jar");
 
-    if !Path::new(jar_path).exists() {
-        fs::write(jar_path, GENERATOR_JAR_BYTES).expect("Failed to write OpenAPI Generator JAR");
+    if !jar_path.exists() {
+        fs::write(&jar_path, GENERATOR_JAR_BYTES).expect("Failed to write OpenAPI Generator JAR");
     }
 
-    jar_path
+    jar_path.to_string_lossy().into_owned()
 }
 
 fn main() {
-    std::fs::create_dir_all("./oas-gen/").ok();
-    let java = if cfg!(feature = "bundled-jre") {
-        extract_archive()
+    let base = oas_gen_dir();
+    std::fs::create_dir_all(&base).ok();
+
+    let (java, jar) = if cfg!(feature = "bundled-jre") {
+        (extract_archive(), write_generator_jar())
     } else {
-        "java"
+        ("java".into(), write_generator_jar())
     };
-    let jar = write_generator_jar();
 
     let args: Vec<_> = std::env::args_os().skip(1).collect();
 
-    let status = Command::new(java)
+    let status = Command::new(&java)
         .arg("-jar")
-        .arg(jar)
+        .arg(&jar)
         .args(&args)
         .status()
         .expect("Failed to launch Java — is it installed?");
